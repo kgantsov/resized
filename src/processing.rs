@@ -1,8 +1,9 @@
 use crate::command::Mode;
+use indicatif::ParallelProgressIterator;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::path::PathBuf;
 
 use image::{DynamicImage, GenericImage, GenericImageView, ImageBuffer, Rgb, RgbImage};
-use rayon::prelude::*;
 
 pub fn resize_fit(
     img: &DynamicImage,
@@ -58,9 +59,8 @@ pub fn fit_canvas(
 pub fn process_images(mode: Mode, output_path: PathBuf, border: u32, images: Vec<PathBuf>) -> u64 {
     images
         .par_iter()
+        .progress_count(images.len() as u64)
         .map(|path| {
-            println!("Processing {:?}", path);
-
             let img = match image::open(path) {
                 Ok(img) => img,
                 Err(e) => {
@@ -101,10 +101,7 @@ pub fn process_images(mode: Mode, output_path: PathBuf, border: u32, images: Vec
 
             let file_path = output_path.join(file_name);
             match result.save(&file_path) {
-                Ok(_) => {
-                    println!("Saved to {:?}", file_path);
-                    1
-                }
+                Ok(_) => 1,
                 Err(e) => {
                     eprintln!("Failed to save {:?}: {}", file_path, e);
                     0

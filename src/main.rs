@@ -7,18 +7,24 @@ fn main() {
     let cli = Cli::parse();
 
     if !cli.input_path.is_dir() {
-        eprintln!("error: input path does not exist or is not a directory: {:?}", cli.input_path);
+        eprintln!(
+            "error: input path does not exist or is not a directory: {:?}",
+            cli.input_path
+        );
         std::process::exit(1);
     }
     if !cli.output_path.is_dir() {
-        eprintln!("error: output path does not exist or is not a directory: {:?}", cli.output_path);
+        eprintln!(
+            "error: output path does not exist or is not a directory: {:?}",
+            cli.output_path
+        );
         std::process::exit(1);
     }
 
     let images_to_process = collect_image_paths(&cli.input_path);
 
     println!(
-        "Found {} files in {:?}. Processing all of them.",
+        "Found {} images in {:?}. Processing all of them.",
         images_to_process.len(),
         cli.input_path
     );
