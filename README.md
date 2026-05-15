@@ -15,9 +15,10 @@ cargo build --release
 resized [OPTIONS] <COMMAND>
 
 Options:
-  -i, --input-path <DIR>   Directory of input images [default: .]
-  -o, --output-path <DIR>  Directory to write output images [default: .]
-  -b, --border <PX>        White border in pixels on each side [default: 0]
+  -i, --input-path <DIR>          Directory of input images [default: .]
+  -o, --output-path <DIR>         Directory to write output images [default: .]
+  -b, --border <PX>               Border in pixels on each side [default: 0]
+  -b, --border-color <COLOR>      Border color: white or black [default: white]
 
 Commands:
   fit        Proportional resize to fit within max dimensions
@@ -26,7 +27,7 @@ Commands:
 
 ### `fit` — proportional resize
 
-Scales images down to fit within `--max-width` × `--max-height` while preserving aspect ratio. Images smaller than the target are never upscaled. With `--border`, a white margin is added around the resized image.
+Scales images down to fit within `--max-width` × `--max-height` while preserving aspect ratio. Images smaller than the target are never upscaled. With `--border`, a margin is added around the resized image (color controlled by `--border-color`).
 
 ```bash
 resized fit \
@@ -39,11 +40,11 @@ resized fit \
 
 ### `instagram` — canvas sizing
 
-Fits each image onto a white canvas sized for Instagram:
+Fits each image onto a canvas sized for Instagram (color controlled by `--border-color`):
 - **Portrait** (height > width) → 1080 × 1350
 - **Landscape / square** → 1080 × 1080
 
-The image is centered. `--border` adds extra white space inside the canvas edge.
+The image is centered. `--border` adds extra padding inside the canvas edge.
 
 ```bash
 resized instagram \
