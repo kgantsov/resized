@@ -1,5 +1,6 @@
 use clap::Parser;
 use clap::Subcommand;
+use std::fmt;
 use std::path::PathBuf;
 
 #[derive(Subcommand, Debug)]
@@ -15,6 +16,21 @@ pub enum Mode {
     },
     /// Smart Instagram sizing: 1080×1080 for landscape, 1080×1350 for portrait
     Instagram,
+}
+
+#[derive(Debug, Clone, clap::ValueEnum)]
+pub enum BorderColor {
+    White,
+    Black,
+}
+
+impl fmt::Display for BorderColor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BorderColor::White => write!(f, "white"),
+            BorderColor::Black => write!(f, "black"),
+        }
+    }
 }
 
 #[derive(Parser, Debug)]
@@ -34,6 +50,10 @@ pub struct Cli {
     /// Minimum white border in pixels on each side (default: 0)
     #[arg(short, long, default_value_t = 0, global = true)]
     pub border: u32,
+
+    // Border color
+    #[arg(short, long, default_value_t = BorderColor::White, global = true)]
+    pub border_color: BorderColor,
 
     #[command(subcommand)]
     pub mode: Mode,

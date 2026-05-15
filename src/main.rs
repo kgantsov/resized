@@ -33,6 +33,7 @@ fn main() {
         cli.mode,
         cli.output_path.clone(),
         cli.border,
+        cli.border_color,
         images_to_process.clone(),
     );
 

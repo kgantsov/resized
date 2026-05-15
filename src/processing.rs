@@ -1,4 +1,4 @@
-use crate::command::Mode;
+use crate::command::{BorderColor, Mode};
 use indicatif::ParallelProgressIterator;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::path::PathBuf;
@@ -10,6 +10,7 @@ pub fn resize_fit(
     max_w: u32,
     max_h: u32,
     border: u32,
+    border_color: BorderColor,
 ) -> Result<RgbImage, image::ImageError> {
     let (orig_w, orig_h) = img.dimensions();
     let inner_w = max_w.saturating_sub(border * 2);
@@ -28,7 +29,11 @@ pub fn resize_fit(
 
     let canvas_w = scaled_w + border * 2;
     let canvas_h = scaled_h + border * 2;
-    let mut canvas: RgbImage = ImageBuffer::from_pixel(canvas_w, canvas_h, Rgb([255u8, 255, 255]));
+    let border_rgb = match border_color {
+        BorderColor::White => Rgb([255u8, 255, 255]),
+        BorderColor::Black => Rgb([0u8, 0, 0]),
+    };
+    let mut canvas: RgbImage = ImageBuffer::from_pixel(canvas_w, canvas_h, border_rgb);
     canvas.copy_from(&resized.to_rgb8(), border, border)?;
     Ok(canvas)
 }
@@ -38,6 +43,7 @@ pub fn fit_canvas(
     canvas_w: u32,
     canvas_h: u32,
     border: u32,
+    border_color: BorderColor,
 ) -> Result<RgbImage, image::ImageError> {
     let (orig_w, orig_h) = img.dimensions();
     let inner_w = canvas_w.saturating_sub(border * 2);
@@ -47,7 +53,13 @@ pub fn fit_canvas(
     let scaled_h = (orig_h as f32 * scale).round() as u32;
 
     let resized = img.resize_exact(scaled_w, scaled_h, image::imageops::FilterType::Lanczos3);
-    let mut canvas: RgbImage = ImageBuffer::from_pixel(canvas_w, canvas_h, Rgb([255u8, 255, 255]));
+
+    let border_rgb = match border_color {
+        BorderColor::White => Rgb([255u8, 255, 255]),
+        BorderColor::Black => Rgb([0u8, 0, 0]),
+    };
+
+    let mut canvas: RgbImage = ImageBuffer::from_pixel(canvas_w, canvas_h, border_rgb);
     canvas.copy_from(
         &resized.to_rgb8(),
         (canvas_w - scaled_w) / 2,
@@ -56,7 +68,13 @@ pub fn fit_canvas(
     Ok(canvas)
 }
 
-pub fn process_images(mode: Mode, output_path: PathBuf, border: u32, images: Vec<PathBuf>) -> u64 {
+pub fn process_images(
+    mode: Mode,
+    output_path: PathBuf,
+    border: u32,
+    border_color: BorderColor,
+    images: Vec<PathBuf>,
+) -> u64 {
     images
         .par_iter()
         .progress_count(images.len() as u64)
@@ -79,10 +97,11 @@ pub fn process_images(mode: Mode, output_path: PathBuf, border: u32, images: Vec
                     max_width.unwrap_or(w),
                     max_height.unwrap_or(h),
                     border,
+                    border_color.clone(),
                 ),
                 Mode::Instagram => {
                     let (canvas_w, canvas_h) = if w >= h { (1080, 1080) } else { (1080, 1350) };
-                    fit_canvas(&img, canvas_w, canvas_h, border)
+                    fit_canvas(&img, canvas_w, canvas_h, border, border_color.clone())
                 }
             };
 
@@ -123,7 +142,7 @@ mod tests {
     #[test]
     fn resize_fit_no_border_preserves_aspect_ratio() {
         let img = solid_image(200, 100);
-        let out = resize_fit(&img, 100, 100, 0).unwrap();
+        let out = resize_fit(&img, 100, 100, 0, BorderColor::White).unwrap();
         assert_eq!(out.width(), 100);
         assert_eq!(out.height(), 50);
     }
@@ -131,7 +150,7 @@ mod tests {
     #[test]
     fn resize_fit_with_border_adds_padding() {
         let img = solid_image(100, 100);
-        let out = resize_fit(&img, 100, 100, 10).unwrap();
+        let out = resize_fit(&img, 100, 100, 10, BorderColor::White).unwrap();
         // image is scaled to 80×80 (inner), canvas is 100×100
         assert_eq!(out.width(), 100);
         assert_eq!(out.height(), 100);
@@ -140,7 +159,7 @@ mod tests {
     #[test]
     fn resize_fit_does_not_upscale() {
         let img = solid_image(50, 50);
-        let out = resize_fit(&img, 200, 200, 0).unwrap();
+        let out = resize_fit(&img, 200, 200, 0, BorderColor::White).unwrap();
         assert_eq!(out.width(), 50);
         assert_eq!(out.height(), 50);
     }
@@ -148,7 +167,7 @@ mod tests {
     #[test]
     fn fit_canvas_centers_image() {
         let img = solid_image(100, 50);
-        let out = fit_canvas(&img, 200, 200, 0).unwrap();
+        let out = fit_canvas(&img, 200, 200, 0, BorderColor::White).unwrap();
         assert_eq!(out.width(), 200);
         assert_eq!(out.height(), 200);
     }
@@ -156,7 +175,7 @@ mod tests {
     #[test]
     fn fit_canvas_with_border_shrinks_inner() {
         let img = solid_image(100, 100);
-        let out = fit_canvas(&img, 200, 200, 20).unwrap();
+        let out = fit_canvas(&img, 200, 200, 20, BorderColor::White).unwrap();
         assert_eq!(out.width(), 200);
         assert_eq!(out.height(), 200);
         // border pixels should be white
