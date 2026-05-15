@@ -74,6 +74,7 @@ pub fn process_images(
     border: u32,
     border_color: BorderColor,
     images: Vec<PathBuf>,
+    output_is_file: bool,
 ) -> u64 {
     images
         .par_iter()
@@ -113,12 +114,15 @@ pub fn process_images(
                 }
             };
 
-            let Some(file_name) = path.file_name() else {
-                eprintln!("Skipping {:?}: could not determine file name", path);
-                return 0;
+            let file_path = if output_is_file {
+                output_path.clone()
+            } else {
+                let Some(file_name) = path.file_name() else {
+                    eprintln!("Skipping {:?}: could not determine file name", path);
+                    return 0;
+                };
+                output_path.join(file_name)
             };
-
-            let file_path = output_path.join(file_name);
             match result.save(&file_path) {
                 Ok(_) => 1,
                 Err(e) => {

@@ -6,27 +6,30 @@ use resized::walk::collect_image_paths;
 fn main() {
     let cli = Cli::parse();
 
-    if !cli.input_path.is_dir() {
+    let (images_to_process, output_is_file) = if cli.input_path.is_file() {
+        // file-to-file or file-to-dir
+        let output_is_file = !cli.output_path.is_dir();
+        (vec![cli.input_path.clone()], output_is_file)
+    } else if cli.input_path.is_dir() {
+        if !cli.output_path.is_dir() {
+            eprintln!(
+                "error: output path does not exist or is not a directory: {:?}",
+                cli.output_path
+            );
+            std::process::exit(1);
+        }
+        (collect_image_paths(&cli.input_path), false)
+    } else {
         eprintln!(
-            "error: input path does not exist or is not a directory: {:?}",
+            "error: input path does not exist or is not a file/directory: {:?}",
             cli.input_path
         );
         std::process::exit(1);
-    }
-    if !cli.output_path.is_dir() {
-        eprintln!(
-            "error: output path does not exist or is not a directory: {:?}",
-            cli.output_path
-        );
-        std::process::exit(1);
-    }
-
-    let images_to_process = collect_image_paths(&cli.input_path);
+    };
 
     println!(
-        "Found {} images in {:?}. Processing all of them.",
+        "Found {} image(s). Processing.",
         images_to_process.len(),
-        cli.input_path
     );
 
     let processed_images = process_images(
@@ -34,11 +37,9 @@ fn main() {
         cli.output_path.clone(),
         cli.border,
         cli.border_color,
-        images_to_process.clone(),
+        images_to_process,
+        output_is_file,
     );
 
-    println!(
-        "Done resizing {} images in {:?}",
-        processed_images, cli.input_path
-    );
+    println!("Done resizing {} image(s).", processed_images);
 }
