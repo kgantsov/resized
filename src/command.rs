@@ -36,6 +36,7 @@ impl fmt::Display for BorderColor {
 #[derive(Parser, Debug)]
 #[command(
     name = "resized",
+    version,
     about = "A simple image resizing tool with optional white borders."
 )]
 pub struct Cli {
