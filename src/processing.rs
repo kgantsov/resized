@@ -71,6 +71,8 @@ pub fn fit_canvas(
 pub fn process_images(
     mode: Mode,
     output_path: PathBuf,
+    prefix: String,
+    suffix: String,
     border: u32,
     border_color: BorderColor,
     images: Vec<PathBuf>,
@@ -117,10 +119,23 @@ pub fn process_images(
             let file_path = if output_is_file {
                 output_path.clone()
             } else {
-                let Some(file_name) = path.file_name() else {
+                let Some(file_name) = path.file_stem() else {
                     eprintln!("Skipping {:?}: could not determine file name", path);
                     return 0;
                 };
+
+                let Some(extension) = path.extension() else {
+                    eprintln!("Skipping {:?}: could not determine file extension", path);
+                    return 0;
+                };
+                let file_name = format!(
+                    "{}{}{}.{}",
+                    prefix,
+                    file_name.to_string_lossy(),
+                    suffix,
+                    extension.to_string_lossy()
+                );
+
                 output_path.join(file_name)
             };
             match result.save(&file_path) {

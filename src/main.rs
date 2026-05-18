@@ -27,14 +27,13 @@ fn main() {
         std::process::exit(1);
     };
 
-    println!(
-        "Found {} image(s). Processing.",
-        images_to_process.len(),
-    );
+    println!("Found {} image(s). Processing.", images_to_process.len(),);
 
     let processed_images = process_images(
         cli.mode,
         cli.output_path.clone(),
+        cli.prefix,
+        cli.suffix,
         cli.border,
         cli.border_color,
         images_to_process,

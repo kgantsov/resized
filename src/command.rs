@@ -1,5 +1,6 @@
 use clap::Parser;
 use clap::Subcommand;
+use clap::builder::Str;
 use std::fmt;
 use std::path::PathBuf;
 
@@ -48,6 +49,17 @@ pub struct Cli {
     #[arg(short, long, default_value = ".", global = true)]
     pub output_path: PathBuf,
 
+    /// Prefix for output filenames (default: "") - ignored if output is a file
+    #[arg(short, long, default_value = "", global = true)]
+    pub prefix: String,
+
+    /// Suffix for output filenames (default: "") - ignored if output is a file
+    #[arg(short, long, default_value = "", global = true)]
+    pub suffix: String,
+
+    // /// Name pattern for example  --name-pattern "photo_{n:04}.jpg" → photo_0001.jpg, photo_0002.jpg
+    // #[arg(long, default_value = "", global = true)]
+    // pub name_pattern: String,
     /// Minimum white border in pixels on each side (default: 0)
     #[arg(short, long, default_value_t = 0, global = true)]
     pub border: u32,
