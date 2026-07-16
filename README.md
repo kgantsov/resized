@@ -4,6 +4,29 @@ Batch image resizer with two modes: proportional fit and Instagram-ready canvas 
 
 ## Installation
 
+
+### Install script (macOS & Linux)
+
+The quickest way to get `resized` is the install script, which detects your OS
+(macOS or Linux) and architecture (Apple Silicon / ARM64 or Intel / x86_64),
+downloads the latest prebuilt binary, and installs it to `/usr/local/bin`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kgantsov/resized/main/install.sh | bash
+```
+
+Or download and run it manually if you'd rather inspect it first:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/kgantsov/resized/main/install.sh
+bash install.sh
+```
+
+The script may prompt for `sudo` to write to `/usr/local/bin`. Once it finishes,
+run `resized --help` to verify.
+
+### Build from source
+
 ```bash
 cargo build --release
 # binary at target/release/resized
